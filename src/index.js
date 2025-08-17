@@ -467,19 +467,28 @@ class RestaurantChatbotApp {
             await this.database.connect();
             await this.database.initialize();
             
-            // Initialize WhatsApp service
-            console.log('📱 Initializing WhatsApp service...');
-            this.whatsappService = new WhatsAppService(this.chatbot, this.database);
+            // Initialize WhatsApp service (skip in production if SKIP_WHATSAPP=true)
+            if (process.env.SKIP_WHATSAPP !== 'true') {
+                console.log('📱 Initializing WhatsApp service...');
+                this.whatsappService = new WhatsAppService(this.chatbot, this.database);
+            } else {
+                console.log('📱 Skipping WhatsApp service (SKIP_WHATSAPP=true)');
+            }
             
             // Initialize Telegram service
             console.log('🤖 Initializing Telegram service...');
             this.telegramService = new TelegramService(this.chatbot, this.database);
             
             // Start services (don't wait for WhatsApp as it requires QR scan)
-            Promise.all([
-                this.whatsappService.initialize().catch(err => console.log('WhatsApp init error:', err.message)),
-                this.telegramService.initialize().catch(err => console.log('Telegram init error:', err.message))
-            ]);
+            const services = [];
+            
+            if (this.whatsappService) {
+                services.push(this.whatsappService.initialize().catch(err => console.log('WhatsApp init error:', err.message)));
+            }
+            
+            services.push(this.telegramService.initialize().catch(err => console.log('Telegram init error:', err.message)));
+            
+            Promise.all(services);
             
             console.log('✅ All services initialized successfully!');
             
