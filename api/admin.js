@@ -120,11 +120,22 @@ export default function handler(req, res) {
                 const message = encodeURIComponent('Olá! Estou na mesa ' + i + ' do ' + restaurantName + '. Gostaria de fazer um pedido.');
                 const qrData = 'https://wa.me/' + restaurantPhone + '?text=' + message;
                 
-                html += '<div class="qr-link">';
-                html += '<strong>Mesa ' + i + ':</strong><br>';
-                html += '<a href="' + qrData + '" target="_blank">' + qrData + '</a>';
+                // Gerar QR Code usando API do QR Server
+                const qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(qrData);
+                
+                html += '<div class="qr-link" style="text-align: center; margin: 20px 0; border: 2px solid #007bff; padding: 20px; border-radius: 10px;">';
+                html += '<h3>Mesa ' + i + '</h3>';
+                html += '<img src="' + qrImageUrl + '" alt="QR Code Mesa ' + i + '" style="display: block; margin: 10px auto;"><br>';
+                html += '<small style="word-break: break-all; color: #666;">' + qrData + '</small><br>';
+                html += '<a href="' + qrData + '" target="_blank" class="button" style="margin-top: 10px; display: inline-block;">Testar Link</a>';
                 html += '</div>';
             }
+            
+            // Adicionar botão para imprimir
+            html += '<div style="text-align: center; margin: 20px 0;">';
+            html += '<button class="button" onclick="window.print()" style="background: #28a745;">🖨️ Imprimir QR Codes</button>';
+            html += '</div>';
+            
             document.getElementById('qr-results').innerHTML = html;
         }
 
