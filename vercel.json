@@ -1,3 +1,21 @@
 {
-  "version": 2
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/admin",
+      "dest": "/api/admin.js"
+    },
+    {
+      "src": "/api/health", 
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/api/menu",
+      "dest": "/api/menu.js"
+    },
+    {
+      "src": "/",
+      "dest": "/public/index.html"
+    }
+  ]
 }
