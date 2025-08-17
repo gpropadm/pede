@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 
 // Import services
 import Database from './database/database.js';
+import MemoryDatabase from './database/memoryDatabase.js';
 import RestaurantChatbot from './services/langchain.js';
 import WhatsAppService from './services/whatsapp.js';
 import TelegramService from './services/telegram.js';
@@ -24,8 +25,10 @@ class RestaurantChatbotApp {
         this.app = express();
         this.port = process.env.PORT || 3000;
         
-        // Initialize services
-        this.database = new Database(process.env.DATABASE_PATH);
+        // Initialize services (use memory database for serverless)
+        this.database = process.env.NODE_ENV === 'production' 
+            ? new MemoryDatabase() 
+            : new Database(process.env.DATABASE_PATH);
         this.chatbot = new RestaurantChatbot();
         this.orderController = new OrderController(this.database);
         this.qrGenerator = new QRCodeGenerator(`http://localhost:${this.port}`);
@@ -467,28 +470,35 @@ class RestaurantChatbotApp {
             await this.database.connect();
             await this.database.initialize();
             
-            // Initialize WhatsApp service (skip in production if SKIP_WHATSAPP=true)
-            if (process.env.SKIP_WHATSAPP !== 'true') {
-                console.log('📱 Initializing WhatsApp service...');
-                this.whatsappService = new WhatsAppService(this.chatbot, this.database);
+            // Skip WhatsApp and Telegram in serverless production
+            if (process.env.NODE_ENV !== 'production') {
+                // Initialize WhatsApp service (skip in production if SKIP_WHATSAPP=true)
+                if (process.env.SKIP_WHATSAPP !== 'true') {
+                    console.log('📱 Initializing WhatsApp service...');
+                    this.whatsappService = new WhatsAppService(this.chatbot, this.database);
+                } else {
+                    console.log('📱 Skipping WhatsApp service (SKIP_WHATSAPP=true)');
+                }
+                
+                // Initialize Telegram service
+                console.log('🤖 Initializing Telegram service...');
+                this.telegramService = new TelegramService(this.chatbot, this.database);
+                
+                // Start services (don't wait for WhatsApp as it requires QR scan)
+                const services = [];
+                
+                if (this.whatsappService) {
+                    services.push(this.whatsappService.initialize().catch(err => console.log('WhatsApp init error:', err.message)));
+                }
+                
+                if (this.telegramService) {
+                    services.push(this.telegramService.initialize().catch(err => console.log('Telegram init error:', err.message)));
+                }
+                
+                Promise.all(services);
             } else {
-                console.log('📱 Skipping WhatsApp service (SKIP_WHATSAPP=true)');
+                console.log('🚀 Running in serverless production mode - skipping bot services');
             }
-            
-            // Initialize Telegram service
-            console.log('🤖 Initializing Telegram service...');
-            this.telegramService = new TelegramService(this.chatbot, this.database);
-            
-            // Start services (don't wait for WhatsApp as it requires QR scan)
-            const services = [];
-            
-            if (this.whatsappService) {
-                services.push(this.whatsappService.initialize().catch(err => console.log('WhatsApp init error:', err.message)));
-            }
-            
-            services.push(this.telegramService.initialize().catch(err => console.log('Telegram init error:', err.message)));
-            
-            Promise.all(services);
             
             console.log('✅ All services initialized successfully!');
             
