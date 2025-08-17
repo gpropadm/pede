@@ -1,0 +1,35 @@
+{
+  "name": "restaurant-chatbot",
+  "version": "1.0.0",
+  "description": "Intelligent WhatsApp/Telegram chatbot for restaurant orders using LangChain",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "echo 'No build step required'",
+    "vercel-build": "echo 'Building for production'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["restaurant", "chatbot", "whatsapp", "telegram", "langchain", "ai"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "langchain": "^0.1.25",
+    "@langchain/openai": "^0.0.14",
+    "@langchain/community": "^0.0.28",
+    "whatsapp-web.js": "^1.23.0",
+    "telegraf": "^4.15.6",
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "dotenv": "^16.3.1",
+    "qrcode": "^1.5.3",
+    "puppeteer": "^21.9.0",
+    "axios": "^1.6.7",
+    "uuid": "^9.0.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
