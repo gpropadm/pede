@@ -1,13 +1,9 @@
 {
   "version": 2,
-  "name": "restaurant-chatbot",
   "builds": [
     {
       "src": "src/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["src/**"]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -18,10 +14,5 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "src/index.js": {
-      "maxDuration": 30
-    }
   }
 }
